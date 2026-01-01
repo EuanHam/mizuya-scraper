@@ -27,3 +27,29 @@ So we're pivoting to playwright so now we actually interact with the browser. Fi
 ![Success!](/Notes/Images/success.png)
 
 Using the anchors we got our first success screen with the product name as well as in stock status!
+
+Now we just need to turn this into a lambda!
+
+Soooo we can't. Real engineering constraints start showing up. My budget is ideally 0. If the project turns too big that i start facing costs, that would be annoying for me but at least that means the project did a good job attracting people which is ultimately good for me. However, if I start incurring costs before that, then that's useless??? Here's why I need to pivot from chromium and playwright:
+- Playwright + chromium exceeds Lambda's free tier
+- Chromium cold start times add to runtime (and billing)
+- Transitioning from twice a day to once an hour for anticipated restock hours for example may even triple costs
+- I want to add scraping for other sites too which will 5-10x the cost
+
+Solution:
+I found out about this library called [Cloudscraper](https://pypi.org/project/cloudscraper/). It's relatively lightweight and it's also easy to use. The issue with the first time scraping was the Cloudflare challenge screen, but this library bypasses this. With this configured, the scraping is basically the same as using Requests.
+
+I tried this locally and it worked. 
+
+I converted this to a Lambda function and wrote a small bash script to configure easily.
+
+Here're the results for Hojicha on Marukyu.
+
+```Python
+scraper = cloudscraper.create_scraper()
+url = "marukyu-koyamaen.co.jp/.../matcha/principal"
+print(f"Visiting {url}")
+response = scraper.get(url, timeout=10)
+```
+
+![Lambda Success!](/Notes/Images/lambdaSuccess.png)
