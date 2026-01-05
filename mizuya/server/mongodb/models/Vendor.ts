@@ -13,9 +13,6 @@ const vendorSchema = new Schema({
         type: String,
         required: true,
     },
-    link: {
-        type: String,
-    },
     logoLink: {
         type: String
     }
