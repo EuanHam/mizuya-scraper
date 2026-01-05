@@ -33,6 +33,9 @@ const productSchema = new Schema({
     link: {
         type: String,
     },
+    imageLink: {
+        type: String,
+    },
     vendor: {
         type: Schema.Types.ObjectId,
         ref: "Vendor",

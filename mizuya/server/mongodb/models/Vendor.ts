@@ -12,6 +12,12 @@ const vendorSchema = new Schema({
     website: {
         type: String,
         required: true,
+    },
+    link: {
+        type: String,
+    },
+    logoLink: {
+        type: String
     }
 });
 

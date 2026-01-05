@@ -16,6 +16,7 @@ product
 - most recent availability
 - history - tuple of (date, availability, price)
 - link (to product)
+- link (to image)
 - vendor
 
 vendor
@@ -23,5 +24,7 @@ vendor
 - id
 - name
 - list of products
+- link (to site)
+- link (to logo image)
 
 Now to make a mongo atlas cluster and write some read and post endpoints! also update the lambda function to interact with this. 
