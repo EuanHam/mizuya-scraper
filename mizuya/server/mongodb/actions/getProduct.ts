@@ -10,7 +10,7 @@ async function getProduct(productId: string) {
             throw new Error("Invalid product ID");
         }
         
-        const product = await Product.findById(productId).populate("vendor");
+        const product = await Product.findById(productId)
         
         if (!product) {
             throw new Error("Product not found");

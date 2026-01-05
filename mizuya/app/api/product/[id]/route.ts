@@ -2,10 +2,10 @@ import getProduct from "@/server/mongodb/actions/getProduct";
 
 export const GET = async (
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> => {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!id) {
             return new Response("Product ID is required", { status: 400 });

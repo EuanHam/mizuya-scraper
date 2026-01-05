@@ -2,10 +2,10 @@ import getVendor from "@/server/mongodb/actions/getVendor";
 
 export const GET = async (
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> => {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!id) {
             return new Response("Vendor ID is required", { status: 400 });
