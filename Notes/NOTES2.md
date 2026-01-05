@@ -28,3 +28,25 @@ vendor
 - link (to logo image)
 
 Now to make a mongo atlas cluster and write some read and post endpoints! also update the lambda function to interact with this. 
+
+There's probably a lot of things to do with the actual API but I'm just gonna write stuff for interacting with product/vendor like obvious GET and POST endpoints
+
+Luckily doing this is pretty easy (thanks bits of good dev bootcamp)
+
+Here's a postman result for a 200 with a sample body for Rocky's
+
+![Post request success](/Notes/images/postSuccess.png)
+
+After this I went to the Marukyu website and actually came across this:
+
+![Random stock](/Notes/images/randomStock.png)
+
+Aorashi actually in stock!? But I decided not to buy. 
+
+Two reasons
+- I still have my Hatoya matcha (an a little bit of a Rocky's tin)
+- Something with my ego. I want to earn my chance to get the Aorashi
+
+Anywho, besides those GET and POST endpoints I need to also have PATCH endpoints to easily update product availability/price history
+
+For the MVP a final POST /api/scrape endpoint might be necessary for EventBridge to call to trigger the lambda. Not entirely sure about this yet
