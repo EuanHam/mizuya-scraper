@@ -17,4 +17,4 @@ async function createProduct(
     }
 }
 
-export default createProduct;
+export default createProduct
