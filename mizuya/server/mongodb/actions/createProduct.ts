@@ -4,13 +4,12 @@ import Product from "../models/Product";
 
 async function createProduct(
     name: string,
-    description: string,
     price: number,
     vendor: mongoose.Schema.Types.ObjectId
 ) {
     try {
         await connectDB();
-        const newProduct = new Product({ name, description, price, vendor });
+        const newProduct = new Product({ name, price, vendor });
         await newProduct.save();
     } catch (error) {
         throw false;
