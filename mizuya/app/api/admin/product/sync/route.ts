@@ -136,7 +136,7 @@ export const POST = async (req: Request): Promise<Response> => {
 POST http://localhost:3000/api/admin/product/sync
 
 {
-  "vendorId": "695bf7949571d57fd75e26eb",
+  "vendorId": "",
   "products": [
     {
       "title": "Ceremonial Blend Matcha 20g",
