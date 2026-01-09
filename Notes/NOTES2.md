@@ -50,3 +50,24 @@ Two reasons
 Anywho, besides those GET and POST endpoints I need to also have PATCH endpoints to easily update product availability/price history
 
 For the MVP a final POST /api/scrape endpoint might be necessary for EventBridge to call to trigger the lambda. Not entirely sure about this yet
+
+More admin API endpoints implemented like 
+- api/admin/product/[id] - updates the product history
+- api/admin/product/sync - syncs up all of the products
+
+I made these endpoints so that the lambda function could invoke them when scraping the first and subsequent times.
+
+I updated the lambda and ran it. Success! I went to mizuya-api.vercel.app/api/products (a handful, i know) and saw that all of the Marukyu tins were there with the "out of stock" labels
+
+Now I went to event bridge to invoke the lambda twice a day: 2am and 2pm est. I used the cron notation for cron(0, 2/12, *, *, ?, *) EST.
+
+![Eventbrdige](/Notes/Images/eventbridge.png)
+
+It's currently Thursday, Jan 8, 2026. When I wake up tomorrow on Friday, I'll check the products endpoint and see if it worked out!
+
+In the meantime though I need to figure out how to work out things like mailing as that's the next step. Some options
+- Resend
+- AWS SES
+- Mailgun
+
+Besides that I also have concerns on security--in terms of environment variables as well as well as rate limiting as well as preventing others from using POST or PATCH endpoints

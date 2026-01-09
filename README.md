@@ -13,6 +13,9 @@ To run the lambda function:
 - Key: VENDOR_ID
 - Value: Marukyu's vendor ID in MongDB Atlas
 
+Eventbridge to invoke lambda
+- cron(0, 2/12, *, *, ?, *) EST
+
 
 In development:
 - API
