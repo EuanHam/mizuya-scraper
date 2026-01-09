@@ -9,8 +9,14 @@ To run the lambda function:
     ./lambda.sh
     ~~~
 2. Upload tea-scraper.zip to AWS Lambda
+3. Set environment variables:
+- Key: VENDOR_ID
+- Value: Marukyu's vendor ID in MongDB Atlas
 
 
 In development:
 - API
+
+To be done:
+- API Docs
 - Dashboard
