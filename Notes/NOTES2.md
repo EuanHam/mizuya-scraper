@@ -61,7 +61,7 @@ I updated the lambda and ran it. Success! I went to mizuya-api.vercel.app/api/pr
 
 Now I went to event bridge to invoke the lambda twice a day: 2am and 2pm est. I used the cron notation for cron(0, 2/12, *, *, ?, *) EST.
 
-![Eventbrdige](/Notes/Images/eventbridge.png)
+![EventBridge](/Notes/Images/eventbridge.png)
 
 It's currently Thursday, Jan 8, 2026. When I wake up tomorrow on Friday, I'll check the products endpoint and see if it worked out!
 
@@ -71,3 +71,9 @@ In the meantime though I need to figure out how to work out things like mailing 
 - Mailgun
 
 Besides that I also have concerns on security--in terms of environment variables as well as well as rate limiting as well as preventing others from using POST or PATCH endpoints
+
+In terms of emailing services now, I decided that AWS SES was the way to go. For something like Resend, it looks like easy setup but there's a max 3000 free emails per month and a max 100 emails per day on the free tier. The first paid tier is 20 dollars/month for an amount of emails I realistically won't reach.
+
+However AWS SES is pay-as-you-go for $0.10/1000 emails outbound where an email is an incoming mail chunk or about 256 kb. I really only intend on having the email just say x vendor had a restock.
+
+To test to begin with i'm going to have marukyu koyamaen and just have email notifications for when ANY of the products are back in stock. But for other configurations in the future that will have to change. 
