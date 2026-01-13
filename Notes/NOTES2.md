@@ -77,3 +77,9 @@ In terms of emailing services now, I decided that AWS SES was the way to go. For
 However AWS SES is pay-as-you-go for $0.10/1000 emails outbound where an email is an incoming mail chunk or about 256 kb. I really only intend on having the email just say x vendor had a restock.
 
 To test to begin with i'm going to have marukyu koyamaen and just have email notifications for when ANY of the products are back in stock. But for other configurations in the future that will have to change. 
+
+I'm playing around with SES and managed to send an email from euanham05@gmail.com to my junk email
+
+However, because of the AWS security features they prevent just anyone from sending emails to anyone without production access. I first realized when I was asked to put something into the sending domain and had nothing to show for that. I mean i can send emails between emails i get verified just to test but I want to deploy ASAP so I might as well get a domain.
+
+So I'm going to hopefully get a free domain with freenom and put it on Cloudflare to manage DNS.
