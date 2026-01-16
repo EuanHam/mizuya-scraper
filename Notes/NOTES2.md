@@ -87,3 +87,4 @@ So I'm going to hopefully get a free domain with freenom and put it on Cloudflar
 So I ended up buying mizuya-api.com from Cloudflare for just 10 dollars a year. I put the cname and a records into cloudflare and now the domain links to my website!
 
 But I need to request production access. In terms of DNS stuff that's good. I just need to link my site and request access but I'll put some docs on the website before requesting so that it doesn't look to suspicious!
+Besides that I also have concerns on security--in terms of environment variables as well as well as rate limiting as well as preventing others from using POST or PATCH endpoints
