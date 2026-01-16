@@ -83,3 +83,7 @@ I'm playing around with SES and managed to send an email from euanham05@gmail.co
 However, because of the AWS security features they prevent just anyone from sending emails to anyone without production access. I first realized when I was asked to put something into the sending domain and had nothing to show for that. I mean i can send emails between emails i get verified just to test but I want to deploy ASAP so I might as well get a domain.
 
 So I'm going to hopefully get a free domain with freenom and put it on Cloudflare to manage DNS.
+
+So I ended up buying mizuya-api.com from Cloudflare for just 10 dollars a year. I put the cname and a records into cloudflare and now the domain links to my website!
+
+But I need to request production access. In terms of DNS stuff that's good. I just need to link my site and request access but I'll put some docs on the website before requesting so that it doesn't look to suspicious!
