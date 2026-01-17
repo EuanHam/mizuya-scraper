@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 h1 {
-  @apply text-4xl font-bold mb-;
+  @apply text-4xl font-bold mb-2;
 }
 
 h2 {
