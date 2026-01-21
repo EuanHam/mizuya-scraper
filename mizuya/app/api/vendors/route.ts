@@ -25,7 +25,6 @@ export const GET = async (
             );
         }
 
-
         const vendors = await readVendors();
 
         return Response.json(
