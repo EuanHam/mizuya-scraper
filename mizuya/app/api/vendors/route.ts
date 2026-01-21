@@ -1,11 +1,5 @@
 import readVendors from "@/server/mongodb/actions/readVendors";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(1, "10 s"), // 1 request per 10 seconds
-});
+import { checkRateLimit } from "@/lib/rateLimiter";
 
 export const GET = async (
     req: Request
@@ -15,7 +9,7 @@ export const GET = async (
         const ip = forwardedFor?.split(',')[0].trim() || "127.0.0.1";
         
         // Check rate limit
-        const { success, limit, reset, remaining } = await ratelimit.limit(ip);
+        const { success, limit, reset, remaining } = await checkRateLimit(ip);
         
         if (!success) {
             return new Response(

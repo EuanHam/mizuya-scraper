@@ -1,14 +1,11 @@
-import {Ratelimit} from "@upstash/ratelimit";
-import {Redis} from "@upstash/redis";
- 
- 
-const redis = new Redis({
-  url: 'UPSTASH_REDIS_REST_URL',
-  token: 'UPSTASH_REDIS_REST_TOKEN',
-})
- 
-// Create a new ratelimiter, that allows 5 requests per 60 seconds
+import { Ratelimit } from "@upstash/ratelimit";
+import { redis } from "./redis";
+
 const ratelimit = new Ratelimit({
   redis: redis,
-  limiter: Ratelimit.fixedWindow(5, "60 s"),
+  limiter: Ratelimit.tokenBucket(5, "30 s", 10)
 });
+
+export async function checkRateLimit(ip: string) {
+  return await ratelimit.limit(ip);
+}
