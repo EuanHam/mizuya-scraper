@@ -8,6 +8,8 @@ const MARUKYU_VENDOR_ID = "6960443662b4343e0fb34ef7";
 
 export async function POST(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const testMode = searchParams.get("test") === "true";
     const products = await readProducts();
 
     const marukyuProducts = products.filter(
@@ -17,6 +19,25 @@ export async function POST(request: NextRequest) {
     const inStockProducts = marukyuProducts.filter(
       (product) => product.mostRecentAvailability === true
     );
+
+    // Test mode: always send email
+    if (testMode && SUBSCRIBER_EMAILS.length > 0) {
+      const htmlBody = `<p><strong>[TEST MODE]</strong> No items in stock</p>`;
+      const textBody = `[TEST MODE] No items in stock`;
+
+      await sendBulkEmail(
+        SUBSCRIBER_EMAILS,
+        "[TEST] Marukyu Koyamaen restock",
+        htmlBody,
+        textBody
+      );
+
+      return NextResponse.json({
+        success: true,
+        message: `Test email sent to ${SUBSCRIBER_EMAILS.length} subscriber(s)`,
+        testMode: true,
+      });
+    }
 
     if (inStockProducts.length > 0 && SUBSCRIBER_EMAILS.length > 0) {
       const htmlBody = `<p>Marukyu Koyamaen is back in stock!</p>`;
