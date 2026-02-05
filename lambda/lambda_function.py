@@ -13,7 +13,8 @@ def lambda_handler(event, context):
     url = "https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal"
     
     # configure from env 
-    api_endpoint = os.environ.get("API_ENDPOINT", "https://mizuya-api.vercel.app/api/admin/product/sync")
+    api_endpoint = os.environ.get("API_ENDPOINT", "https://mizuya-api.com/api/admin/product/sync")
+    notify_endpoint = os.environ.get("NOTIFY_ENDPOINT", "https://mizuya-api.com/api/admin/product/notify")
     vendor_id = os.environ.get("VENDOR_ID")
     
     if not vendor_id:
@@ -38,6 +39,7 @@ def lambda_handler(event, context):
         products = soup.find_all('li', class_='product')
         
         # extract product data
+        in_stock_count = 0
         for product in products:
             link = product.find('a', class_='woocommerce-loop-product__link')
             title = link.get('title') if link else 'N/A'
@@ -46,6 +48,7 @@ def lambda_handler(event, context):
             status = "out_of_stock"
             if 'outofstock' not in product.get('class', []):
                 status = "in_stock"
+                in_stock_count += 1
             
             results["products"].append({
                 "title": title,
@@ -67,13 +70,33 @@ def lambda_handler(event, context):
         
         if sync_response.status_code == 200:
             sync_result = sync_response.json()
+            
+            # If products are in stock, send notifications
+            if in_stock_count > 0:
+                try:
+                    notify_response = requests.post(
+                        notify_endpoint,
+                        timeout=15
+                    )
+                    notify_status = notify_response.status_code
+                    notify_body = notify_response.json() if notify_response.status_code == 200 else notify_response.text
+                except Exception as notify_error:
+                    notify_status = 500
+                    notify_body = str(notify_error)
+            else:
+                notify_status = None
+                notify_body = None
+            
             return {
                 "statusCode": 200,
                 "headers": {"Content-Type": "application/json"},
                 "body": json.dumps({
                     "success": True,
                     "scrape_count": len(products),
+                    "in_stock_count": in_stock_count,
                     "sync_result": sync_result,
+                    "notify_status": notify_status,
+                    "notify_response": notify_body,
                     "scrape_data": results
                 }, ensure_ascii=False)
             }

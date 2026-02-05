@@ -12,6 +12,10 @@ To run the lambda function:
 3. Set environment variables:
 - Key: VENDOR_ID
 - Value: Marukyu's vendor ID in MongDB Atlas
+4. AWS SES Environment variables:
+- AWS_REGION=use-east-1
+- SES_SENDER_EMAIL=some_verified_email@gmail.com
+- SUBSCRIBER_EMAILS=some_verified_email@gmail.com
 
 Eventbridge to invoke lambda
 - cron(0, 2/12, *, *, ?, *) EST
