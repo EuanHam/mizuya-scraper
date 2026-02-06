@@ -74,8 +74,10 @@ def lambda_handler(event, context):
             # If products are in stock, send notifications
             if in_stock_count > 0:
                 try:
+                    in_stock_products = [p for p in results["products"] if p["status"] == "in_stock"]
                     notify_response = requests.post(
                         notify_endpoint,
+                        json={"products": in_stock_products},
                         timeout=15
                     )
                     notify_status = notify_response.status_code
