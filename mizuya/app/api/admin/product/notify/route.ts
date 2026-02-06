@@ -10,15 +10,16 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const testMode = searchParams.get("test") === "true";
-    const products = await readProducts();
-
-    const marukyuProducts = products.filter(
-      (product) => product.vendor === MARUKYU_VENDOR_ID
-    );
-
-    const inStockProducts = marukyuProducts.filter(
-      (product) => product.mostRecentAvailability === true
-    );
+    
+    // Try to get products from request body (from lambda)
+    let requestBody;
+    try {
+      requestBody = await request.json();
+    } catch {
+      requestBody = {};
+    }
+    
+    const inStockProducts = requestBody.products || [];
 
     // Test mode: always send email
     if (testMode && SUBSCRIBER_EMAILS.length > 0) {
@@ -65,13 +66,38 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // If products were sent from lambda, use those directly
     if (inStockProducts.length > 0 && SUBSCRIBER_EMAILS.length > 0) {
-      const htmlBody = `<p>Marukyu Koyamaen is back in stock!</p>`;
-      const textBody = `Marukyu Koyamaen is back in stock!`;
+      const productList = inStockProducts.map((p: any) => `- ${p.title}`).join("\n");
+      const htmlBody = `
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+              <h2 style="color: #2c3e50; margin-top: 0;">🍵 Marukyu Koyamaen Restock Alert!</h2>
+              <p style="color: #666;">Great news! The following products are now back in stock:</p>
+              <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #27ae60; margin: 15px 0;">
+                <pre style="white-space: pre-wrap; font-family: Arial; margin: 0;">${productList}</pre>
+              </div>
+              <a href="https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal" style="display: inline-block; background-color: #27ae60; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 15px;">Shop Now</a>
+              <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+              <p style="color: #999; font-size: 12px; margin: 0;">This is an automated message from Mizuya Matcha Monitor.</p>
+            </div>
+          </body>
+        </html>
+      `;
+      const textBody = `Marukyu Koyamaen Restock Alert!
+      
+Great news! The following products are now back in stock:
+${productList}
+
+Shop: https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal
+
+---
+This is an automated message from Mizuya Matcha Monitor.`;
 
       await sendBulkEmail(
         SUBSCRIBER_EMAILS,
-        "Marukyu Koyamaen restock",
+        "🍵 Marukyu Koyamaen restock",
         htmlBody,
         textBody
       );
@@ -79,11 +105,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: `Notification sent to ${SUBSCRIBER_EMAILS.length} subscriber(s)`,
-        inStockProducts: inStockProducts.map((p) => ({
-          name: p.name,
-          price: p.mostRecentPrice,
-          link: p.link,
-        })),
+        productCount: inStockProducts.length,
+        products: inStockProducts.map((p: any) => p.title),
       });
     }
 
