@@ -7,6 +7,9 @@ import requests
 
 marukyuID = "6960443662b4343e0fb34ef7"
 rockysID = "695bf7949571d57fd75e26eb"
+ippodoID = "699f4b6f96376fdf35515c4a"
+namiID = "699f4bb696376fdf35515c4c"
+emailToggle = False  # Set to False to disable email notifications
 
 def scrape_marukyu(scraper):
     """
@@ -79,9 +82,83 @@ def fetch_rockys_products():
     return products_data
 
 
+def fetch_ippodo_products():
+    """
+    Fetches specific Ippodo matcha products from their products JSON endpoint.
+    Returns list of products with title, price, availability, and id.
+    """
+    # Specific product IDs to track
+    product_ids = [9241731104997, 9280769753317, 9241730842853, 9280765788389]
+    products_data = []
+    
+    try:
+        response = requests.get("https://ippodotea.com/products.json", timeout=10)
+        all_products = response.json()["products"]
+        
+        for product in all_products:
+            # Only include products in our tracking list
+            if product.get("id") not in product_ids:
+                continue
+            
+            # Extract first variant for price and availability
+            variant = product.get("variants", [{}])[0] if product.get("variants") else {}
+            
+            status = "in_stock" if variant.get("available", False) else "out_of_stock"
+            
+            products_data.append({
+                "title": product.get("title", "N/A"),
+                "status": status,
+                "url": f"https://ippodotea.com/collections/matcha/products/{product.get('handle', '')}",
+                "price": variant.get("price", "N/A"),
+                "product_id": product.get("id"),
+                "vendor": "ippodo"
+            })
+    except Exception as e:
+        print(f"Error fetching Ippodo products: {str(e)}")
+    
+    return products_data
+
+
+def fetch_nami_products():
+    """
+    Fetches specific Nami matcha products from their products JSON endpoint.
+    Returns list of products with title, price, availability, and id.
+    """
+    # Specific product IDs to track
+    product_ids = [9982687346980, 9386575069476, 10087083442468, 10038606201124, 9476250730788]
+    products_data = []
+    
+    try:
+        response = requests.get("https://namimatcha.com/products.json", timeout=10)
+        all_products = response.json()["products"]
+        
+        for product in all_products:
+            # Only include products in our tracking list
+            if product.get("id") not in product_ids:
+                continue
+            
+            # Extract first variant for price and availability
+            variant = product.get("variants", [{}])[0] if product.get("variants") else {}
+            
+            status = "in_stock" if variant.get("available", False) else "out_of_stock"
+            
+            products_data.append({
+                "title": product.get("title", "N/A"),
+                "status": status,
+                "url": f"https://namimatcha.com/products/{product.get('handle', '')}",
+                "price": variant.get("price", "N/A"),
+                "product_id": product.get("id"),
+                "vendor": "nami"
+            })
+    except Exception as e:
+        print(f"Error fetching Nami products: {str(e)}")
+    
+    return products_data
+
+
 def lambda_handler(event, context):
     """
-    Scrapes Marukyu Koyamaen and Rocky's matcha products and syncs to the API.
+    Scrapes Marukyu Koyamaen and fetches products from Rocky's, Ippodo, and Nami, then syncs to the API.
     """
     scraper = cloudscraper.create_scraper()
     
@@ -103,6 +180,14 @@ def lambda_handler(event, context):
         # Fetch Rocky's products
         rockys_products = fetch_rockys_products()
         results["rockys_products"] = rockys_products
+        
+        # Fetch Ippodo products
+        ippodo_products = fetch_ippodo_products()
+        results["ippodo_products"] = ippodo_products
+        
+        # Fetch Nami products
+        nami_products = fetch_nami_products()
+        results["nami_products"] = nami_products
         
         # Sync Marukyu products
         marukyu_sync_payload = {
@@ -126,22 +211,48 @@ def lambda_handler(event, context):
             timeout=15
         )
         
-        # Check both responses
+        # Sync Ippodo products
+        ippodo_sync_payload = {
+            "vendorId": ippodoID,
+            "products": ippodo_products
+        }
+        ippodo_sync_response = requests.post(
+            api_endpoint,
+            json=ippodo_sync_payload,
+            timeout=15
+        )
+        
+        # Sync Nami products
+        nami_sync_payload = {
+            "vendorId": namiID,
+            "products": nami_products
+        }
+        nami_sync_response = requests.post(
+            api_endpoint,
+            json=nami_sync_payload,
+            timeout=15
+        )
+        
+        # Check all responses
         marukyu_success = marukyu_sync_response.status_code == 200
         rockys_success = rockys_sync_response.status_code == 200
+        ippodo_success = ippodo_sync_response.status_code == 200
+        nami_success = nami_sync_response.status_code == 200
         
-        if marukyu_success and rockys_success:
+        if marukyu_success and rockys_success and ippodo_success and nami_success:
             marukyu_result = marukyu_sync_response.json()
             rockys_result = rockys_sync_response.json()
+            ippodo_result = ippodo_sync_response.json()
+            nami_result = nami_sync_response.json()
             
             # Combine all products for notification
-            all_products = marukyu_products + rockys_products
+            all_products = marukyu_products + rockys_products + ippodo_products + nami_products
             in_stock_count = sum(1 for p in all_products if p["status"] == "in_stock")
             
-            # If products are in stock, send notifications
+            # If products are in stock, send notifications (if emailToggle is enabled)
             notify_status = None
             notify_body = None
-            if in_stock_count > 0:
+            if in_stock_count > 0 and emailToggle:
                 try:
                     in_stock_products = [p for p in all_products if p["status"] == "in_stock"]
                     notify_response = requests.post(
@@ -162,10 +273,14 @@ def lambda_handler(event, context):
                     "success": True,
                     "marukyu_count": len(marukyu_products),
                     "rockys_count": len(rockys_products),
+                    "ippodo_count": len(ippodo_products),
+                    "nami_count": len(nami_products),
                     "total_count": len(all_products),
                     "in_stock_count": in_stock_count,
                     "marukyu_sync_result": marukyu_result,
                     "rockys_sync_result": rockys_result,
+                    "ippodo_sync_result": ippodo_result,
+                    "nami_sync_result": nami_result,
                     "notify_status": notify_status,
                     "notify_response": notify_body,
                     "scrape_data": results
@@ -177,6 +292,10 @@ def lambda_handler(event, context):
                 errors.append(f"Marukyu sync failed with status {marukyu_sync_response.status_code}: {marukyu_sync_response.text}")
             if not rockys_success:
                 errors.append(f"Rocky's sync failed with status {rockys_sync_response.status_code}: {rockys_sync_response.text}")
+            if not ippodo_success:
+                errors.append(f"Ippodo sync failed with status {ippodo_sync_response.status_code}: {ippodo_sync_response.text}")
+            if not nami_success:
+                errors.append(f"Nami sync failed with status {nami_sync_response.status_code}: {nami_sync_response.text}")
             
             return {
                 "statusCode": 502,
