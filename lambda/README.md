@@ -1,6 +1,11 @@
 # Tea Scraper Lambda
 
-This directory contains the AWS Lambda function for scraping Marukyu Koyamaen matcha products and syncing them to the Next.js API.
+This directory contains the AWS Lambda function for scraping matcha products from multiple vendors and syncing them to the Next.js API.
+
+## Supported Vendors
+
+- **Marukyu Koyamaen**: Web scraping from their product catalog
+- **Rocky's Matcha**: REST API integration using their products JSON endpoint
 
 ## Structure
 
@@ -9,10 +14,11 @@ This directory contains the AWS Lambda function for scraping Marukyu Koyamaen ma
 
 ## How It Works
 
-1. **Scrapes** the Marukyu website for matcha products
-2. **Extracts** product data: title, status (in_stock/out_of_stock), URL
-3. **Posts** to the API endpoint `/api/admin/product/sync`
-4. **API** creates new products or updates existing ones and records history
+1. **Scrapes** Marukyu Koyamaen website for matcha products
+2. **Fetches** Rocky's matcha products from their JSON API
+3. **Extracts** product data: title, status (in_stock/out_of_stock), URL, and price (Rocky's)
+4. **Posts** combined products to the API endpoint `/api/admin/product/sync`
+5. **API** creates new products or updates existing ones and records history
 
 ## Setup & Deployment
 
@@ -33,7 +39,7 @@ This creates `tea-scraper-lambda.zip` with all dependencies included.
 5. Set timeout to 30+ seconds
 6. Add environment variables:
    - `API_ENDPOINT`: `https://your-domain.com/api/admin/product/sync`
-   - `VENDOR_ID`: Your MongoDB vendor ID for Marukyu (e.g., `695bf7949571d57fd75e26eb`)
+   - `VENDOR_ID`: Your MongoDB vendor ID for syncing these vendors (e.g., `695bf7949571d57fd75e26eb`)
 
 ### Set Up EventBridge Trigger
 
@@ -47,8 +53,9 @@ This creates `tea-scraper-lambda.zip` with all dependencies included.
 
 | Variable | Required | Example | Description |
 |----------|----------|---------|-------------|
-| `VENDOR_ID` | Yes | `695bf7949571d57fd75e26eb` | MongoDB vendor ID for the store |
+| `VENDOR_ID` | Yes | `695bf7949571d57fd75e26eb` | MongoDB vendor ID for syncing products |
 | `API_ENDPOINT` | No | `https://api.example.com/api/admin/product/sync` | Full URL to sync endpoint (defaults to localhost) |
+| `NOTIFY_ENDPOINT` | No | `https://api.example.com/api/admin/product/notify` | Full URL to notification endpoint |
 
 ## Response Format
 
@@ -56,10 +63,13 @@ Success (200):
 ```json
 {
   "success": true,
-  "scrape_count": 12,
+  "marukyu_count": 12,
+  "rockys_count": 45,
+  "total_count": 57,
+  "in_stock_count": 35,
   "sync_result": {
-    "created": 2,
-    "updated": 10,
+    "created": 5,
+    "updated": 50,
     "errors": []
   }
 }

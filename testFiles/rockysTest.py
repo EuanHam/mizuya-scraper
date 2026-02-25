@@ -1,7 +1,7 @@
 import requests
 import json
 
-products = [9715651445050, 9985875837242, 8633348555066]
+products = [9715651445050, 9774862401850, 8633348555066]
 rockysProductsUrl = "https://www.rockysmatcha.com/products.json"
 
 response = requests.get(rockysProductsUrl)
